@@ -10,8 +10,18 @@ export const SocketProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
-    // Connect to Socket.IO server
-    const newSocket = io(window.location.origin.replace(':5173', ':5001'), {
+    // Determine Socket URL dynamically based on environment
+    const socketUrl = import.meta.env.VITE_SOCKET_URL || 
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+        ? window.location.origin.replace(':5173', ':5001') 
+        : null);
+
+    if (!socketUrl) {
+      console.log('📡 Real-time Socket Server URL not configured for production environment. Polling mode active.');
+      return;
+    }
+
+    const newSocket = io(socketUrl, {
       transports: ['websocket', 'polling'],
       autoConnect: true
     });
